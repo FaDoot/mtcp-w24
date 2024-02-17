@@ -1,0 +1,121 @@
+cmake_minimum_required(VERSION 3.25)
+project(project_1)
+
+# Set the C++ Standard to C++20
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Finding the required packages
+find_package(GTest REQUIRED)
+find_package(Threads REQUIRED)
+
+# Define the library built from the source files under src/socket
+add_library(socket_lib 
+    src/socket/socket.cpp
+    src/socket/message_socket/client_message_socket.cpp
+    src/socket/message_socket/connection_message_socket.cpp
+    src/socket/message_socket/message_socket.cpp
+    src/socket/client_socket.cpp
+    src/socket/connection_socket.cpp
+    src/socket/server_socket.cpp
+    src/mros_json.cpp
+    src/socket/socket.cpp
+
+    # add any additional .cpp files below
+)
+
+# Include directories for socket_lib. Adjust the paths if needed.
+target_include_directories(socket_lib PUBLIC 
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/socket
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/socket/utils
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/socket/message_socket
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/messages
+    # add any additional include directories here
+)
+
+# Define the library built from src/mros_json.cpp
+add_library(json_parser_lib src/mros_json.cpp)
+
+# Include directories for json_parser_lib if needed
+target_include_directories(json_parser_lib PUBLIC
+    ${PROJECT_SOURCE_DIR}/src
+)
+
+# Executables for controller and system
+add_executable(controller src/controller.cpp)
+add_executable(system src/system.cpp)
+
+# Linking the executables with the previously defined libraries
+target_link_libraries(controller 
+    socket_lib 
+    json_parser_lib
+    Threads::Threads
+)
+
+target_link_libraries(system 
+    socket_lib 
+    json_parser_lib
+    Threads::Threads
+)
+
+# Enable testing with CTest
+enable_testing()
+
+# Assuming GTest has been downloaded or found previously, or included via FetchContent
+find_package(GTest REQUIRED)
+find_package(Threads REQUIRED) # For pthreads
+
+# Add test executable targets
+add_executable(test_message_socket test/test_message_socket.cpp)
+add_executable(test_twist test/test_twist.cpp)
+add_executable(test_pose test/test_pose.cpp)
+add_executable(test_mros_json test/test_mros_json.cpp)
+# ... Create additional test executables as needed
+
+# Include directories for test targets if required. Adjust with the correct include paths.
+# Assuming you are in the base `'CMakeLists.txt` where `src` and `include` directories are subdirectories.
+include_directories(
+    ${PROJECT_SOURCE_DIR}/include
+    # Add other directories if necessary
+)
+
+# Link the test executables with GTest, the libraries, and threads
+target_link_libraries(test_message_socket
+    GTest::GTest 
+    GTest::Main 
+    socket_lib 
+    # json_parser_lib (if exists and is necessary)
+    Threads::Threads
+)
+
+target_link_libraries(test_twist
+    GTest::GTest 
+    GTest::Main 
+    socket_lib 
+    # json_parser_lib (if exists and is necessary)
+    Threads::Threads
+)
+
+target_link_libraries(test_pose
+    GTest::GTest 
+    GTest::Main 
+    socket_lib 
+    # json_parser_lib (if exists and is necessary)
+    Threads::Threads
+)
+
+target_link_libraries(test_mros_json
+    GTest::GTest 
+    GTest::Main 
+    socket_lib 
+    json_parser_lib #perhaps no
+    Threads::Threads
+)
+
+
+# Add the GTest-based tests so they can be run with CTest
+add_test(NAME test_message_socket COMMAND test_message_socket)
+add_test(NAME test_twist COMMAND test_twist)
+add_test(NAME test_pose COMMAND test_pose)
+add_test(NAME test_mros_json COMMAND test_mros_json)

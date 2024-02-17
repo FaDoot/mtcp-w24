@@ -7,6 +7,7 @@
 #include <vector>
 #include <sstream>
 
+
 /**
  * Simple JSON parser. Supports integer, double, std::string types, and arrays of each type.
  */

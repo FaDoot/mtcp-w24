@@ -17,6 +17,7 @@ class MessageSocketTest : public testing::Test {
   void SetUp() override {
     server_socket_ = std::make_shared<ServerSocket>(kDomain_, kServerAddress_, kServerPort_, kBacklogSize_);
     client_socket_ = std::make_shared<ClientMessageSocket>(kDomain_, kServerAddress_, kServerPort_);
+    
     client_socket_->connect();
     connection_socket_ = server_socket_->acceptConnection<ConnectionMessageSocket>();
     if (!connection_socket_) FAIL();
