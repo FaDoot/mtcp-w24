@@ -13,6 +13,7 @@
 #include <cstring>
 
 
+
 ServerSocket::ServerSocket(int const domain, const std::string &address, int port, int const listen_backlog) {
     file_descriptor_ = socket(domain, SOCK_STREAM, 0);
     if (file_descriptor_ == -1) {
@@ -81,28 +82,42 @@ ServerSocket::~ServerSocket() {
     this->close();
 }
 
-// Socket::~Socket() {
-//     if (file_descriptor_ >= 0) {
-//         ::close(file_descriptor_);
-//     }
-// }
 
 std::pair<std::string, int> ServerSocket::getAddressInfo(int domain) {
   
 
     switch (domain) {
         case AF_INET: {
-            // Example for IPv4
-            return std::make_pair("0.0.0.0", 0); // This represents INADDR_ANY and an arbitrary port
+
+            return std::make_pair("0.0.0.0", 0); 
         }
         case AF_INET6: {
-            // Example for IPv6
-            return std::make_pair("::", 0); // This represents in6addr_any and an arbitrary port
+
+            return std::make_pair("::", 0);
         }
         default:
             throw std::invalid_argument("Unsupported domain");
     }
 }
+void ServerSocket::close() {
+    if (is_open_) {
+        ::close(file_descriptor_);
+        is_open_ = false;
+    }
+}
 
-// acceptConnection<T> is templated and most likely defined in the header due to necessity of implementation being visible
+template<class ConnectionSocket> 
+std::shared_ptr<ConnectionSocket> ServerSocket::acceptConnection() {
+    sockaddr_in client_address;
+    socklen_t client_length = sizeof(client_address);
 
+    int new_socket_fd = ::accept(file_descriptor_, (sockaddr*)&client_address, &client_length);
+    if (new_socket_fd < 0) {
+        std::cerr << "Error accepting connection: " << strerror(errno) << std::endl;
+        throw std::runtime_error("Failed to accept a connection");
+    }
+
+    return std::make_shared<ConnectionSocket>(new_socket_fd);
+}
+
+template std::shared_ptr<ConnectionMessageSocket> ServerSocket::acceptConnection<ConnectionMessageSocket>();

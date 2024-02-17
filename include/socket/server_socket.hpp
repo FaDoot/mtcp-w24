@@ -13,7 +13,6 @@
 #include <cstring>
 #include <memory>
 #include <string>
-#include <iostream>
 #include <type_traits>
 
 #include "socket/connection_socket.hpp"
@@ -58,27 +57,13 @@ class ServerSocket : public Socket {
    * @return Shared pointer to generated connection socket class instance.
    * @throws SocketException Throws exception on failure to accept.
    */
-  template<class ConnectionSocket> std::shared_ptr<ConnectionSocket> acceptConnection() {
-    sockaddr_in client_address;
-    socklen_t client_length = sizeof(client_address);
-
-    int new_socket_fd = ::accept(file_descriptor_, (sockaddr*)&client_address, &client_length);
-    if (new_socket_fd < 0) {
-        std::cout << "ERROR WITH FD ON ACCEPT \n";
-    }
-
-    return std::make_shared<ConnectionSocket>(new_socket_fd);
-}
+  template <class ConnectionSocket>
+  std::shared_ptr<ConnectionSocket> acceptConnection();
 
   /**
    * Close the socket's file descriptor if it is not already closed.
    */
-  void close(){
-     if (is_open_) {
-        ::close(file_descriptor_);
-        is_open_ = false;
-    }
-  };
+  void close();
 
  protected:
   /**
